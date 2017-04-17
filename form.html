@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Have I Been Pwned Demo</title>
+    <style type="text/css">
+        input[type="text"] {
+            width: 300px;
+
+        }
+
+        p {
+            margin: 0 0 10px 0;
+        }
+
+        label {
+            display: inline-block;
+            margin: 0 0 5px 0;
+        }
+
+        .red {
+            color: #ff0000;
+        }
+
+        .green {
+            color: #00ff00;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script> 
+</head>
+<body>
+    <form action="" method="POST" enctype="multipart/form-data">
+        <fieldset>
+            <p>
+                <label for="email">
+                    Email: <br />
+                    <input type="text" id="email" name="email" placeholder="Enter your email please" />
+                </label>
+            </p>
+            <p>
+                <label for="password">
+                    Password:<br />
+                    <input type="text" id="password" name="password" placeholder="Please enter your password" value=""  />
+                </label>
+            </p>
+            <p>
+                <label for="confirmpassword">
+                    Confirmation:<br/>
+                    <input type="text" id="confirmpassword" name="confirmpassword" placeholder="Please confirm your password" value="" />
+                </label>
+            </p>
+            <input type="submit" value="Submit" />
+        </fieldset>
+    </form>
+    <div id="password-requirements">
+        <ul>
+            <li id="uppercase">Contains an uppercase letter</li>
+            <li id="lowercase">Contains a lowercase letter</li>
+            <li id="numerical">Contains a number</li>
+            <li id="special">Contains a special character</li>
+            <li id="matches">Confirmation and password match</li>
+            <li id="pwned">Has not been pwned.</li>
+            <li id="email">Password does not contain email</li>
+            <li id="blacklist">Not in blacklist</li>
+        </ul>
+    </div>
+    <script type="text/javascript">
+        var passwordTest = {
+            blacklist: [
+                'password',
+                'scentsy'
+            ],
+            init: function() {
+                this.handleEvents();
+            },
+            checkUpperCase: function() {
+                return /[A-Z\u00C0-\u00DD]+/.test($('input#password').val());
+            },
+            notEmpty: function() {
+                return $('#password').val() !== '';
+            },
+            checkLowerCase: function() {
+                return this.notEmpty() && /[a-z\u00E0-\u00FC]+/.test($('input#password').val());
+            },
+            checkNumerical: function() {
+                return this.notEmpty() && /[0-9\W]+/.test($('input#password').val());
+            },
+            checkSpecialChars: function() {
+                
+            },
+            checkMatching: function() {
+                return this.notEmpty() && $('input#password').val() === $('input#confirmpassword').val();
+            },
+            checkPwned: function() {
+                // $.ajax({
+                //     method: 'get',
+                //     data: {
+                //         user: $('#password').val()
+                //     }
+                // }).done(function(response) {
+                //     console.log('api response');
+                //     console.log(response);
+                //     return true;
+                // }).error(function(response) {
+                //     console.log('error contacting api');
+                //     return false;
+                // });
+            },
+            checkEmail: function() {
+                return this.notEmpty() &&  $('input#password').val().toLowerCase().indexOf($('input#email').val()) < 0;
+            },
+            checkBlacklist: function() {
+                return (this.blacklist.indexOf($('input#password').val().toLowerCase()) < 0);
+            },
+            checkMinimumLength: function() {
+                return $('input#password').val().length > 7;
+            },
+            checkMaximumLength: function() {
+                return $('input#password').val().length < 129;
+            },
+            validate: function() {
+                this.checkBlacklist() ? this.updateAttributeClass($('li#blacklist'), 'class', 'green') : this.updateAttributeClass($('li#blacklist'), 'class', 'red');
+                this.checkEmail() ? this.updateAttributeClass($('li#email'), 'class', 'green') : this.updateAttributeClass($('li#email'), 'class', 'red');
+                this.checkPwned() ? this.updateAttributeClass($('li#pwned'), 'class', 'green') : this.updateAttributeClass($('li#pwned'), 'class', 'red');
+                this.checkMatching() ? this.updateAttributeClass($('li#matches'), 'class', 'green') : this.updateAttributeClass($('li#matches'), 'class', 'red');
+                this.checkNumerical() ? this.updateAttributeClass($('li#numerical'), 'class', 'green') : this.updateAttributeClass($('li#numerical'), 'class', 'red');
+                this.checkSpecialChars() ? this.updateAttributeClass($('li#special'), 'class', 'green') : this.updateAttributeClass($('li#special'), 'class', 'red');
+                this.checkUpperCase() ? this.updateAttributeClass($('li#uppercase'), 'class', 'green') : this.updateAttributeClass($('li#uppercase'), 'class', 'red');
+                this.checkLowerCase() ? this.updateAttributeClass($('li#lowercase'), 'class', 'green') : this.updateAttributeClass($('li#lowercase'), 'class', 'red');
+            },
+            updateAttributeClass: function(objHtml, attributeName, newValue) {
+                objHtml.attr(attributeName, newValue);
+            },
+            handleEvents: function() {
+                var _this = this;
+                $('#password').on('input', function() {
+                    _this.validate();
+                });
+                
+                $('#confirmpassword').on('input', function() {
+                    _this.validate();
+                });
+                this.validate();
+            }
+        };
+
+        $(document).ready(function() {
+            passwordTest.init();
+        });
+    </script>
+</body>
+</html>
