@@ -69,6 +69,9 @@
                 'password',
                 'scentsy'
             ],
+            viewModel: {
+                checkPwnUrl: '/checkpasswordagainstapi'
+            },
             init: function() {
                 this.handleEvents();
             },
@@ -91,25 +94,26 @@
                 return this.notEmpty() && $('input#password').val() === $('input#confirmpassword').val();
             },
             checkPwned: function() {
-                // $.ajax({
-                //     method: 'get',
-                //     data: {
-                //         user: $('#password').val()
-                //     }
-                // }).done(function(response) {
-                //     console.log('api response');
-                //     console.log(response);
-                //     return true;
-                // }).error(function(response) {
-                //     console.log('error contacting api');
-                //     return false;
-                // });
+                let _this = this,
+                    email = $('#email').val();
+                $.ajax({
+                    method: 'post',
+                    url: _this.viewModel.checkPwnUrl,
+                    data: {
+                        email: $('#email').val()
+                    }
+                }).done(function(response) {
+                    return response.Pwnd;
+                }).fail(function(response) {
+                    console.log('Error: ' + response);
+                    return false;
+                });
             },
             checkEmail: function() {
-                return this.notEmpty() &&  $('input#password').val().toLowerCase().indexOf($('input#email').val()) < 0;
+                return this.notEmpty() && $('input#password').val().toLowerCase().indexOf($('input#email').val()) < 0;
             },
             checkBlacklist: function() {
-                return (this.blacklist.indexOf($('input#password').val().toLowerCase()) < 0);
+                return this.notEmpty() && (this.blacklist.indexOf($('input#password').val().toLowerCase()) < 0);
             },
             checkMinimumLength: function() {
                 return $('input#password').val().length > 7;
@@ -138,6 +142,13 @@
                 
                 $('#confirmpassword').on('input', function() {
                     _this.validate();
+                });
+
+                $('#email').on('blur', function() {
+                    if(!_this.checkPwned())
+                        _this.updateAttributeClass($('li#pwned'), 'class', 'green');
+                    else
+                        _this.updateAttributeClass($('li#pwned'), 'class', 'red');
                 });
                 this.validate();
             }

@@ -19,5 +19,8 @@
   "devDependencies": {
     "express": "^4.15.2",
     "haveibeenpwned": "^1.0.1"
+  },
+  "dependencies": {
+    "body-parser": "^1.17.1"
   }
 }
