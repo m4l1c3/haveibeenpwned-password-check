@@ -95,7 +95,9 @@
             },
             checkPwned: function() {
                 let _this = this,
-                    email = $('#email').val();
+                    email = $('#email').val(),
+                    deferred = $.Deferred();
+                
                 $.ajax({
                     method: 'post',
                     url: _this.viewModel.checkPwnUrl,
@@ -103,11 +105,14 @@
                         email: $('#email').val()
                     }
                 }).done(function(response) {
-                    return response.Pwnd;
+                    deferred.resolve(response.Pwnd);
                 }).fail(function(response) {
                     console.log('Error: ' + response);
-                    return false;
+                    deferred.reject(false);
                 });
+
+                return deferred;
+                
             },
             checkEmail: function() {
                 return this.notEmpty() && $('input#password').val().toLowerCase().indexOf($('input#email').val()) < 0;
@@ -145,10 +150,16 @@
                 });
 
                 $('#email').on('blur', function() {
-                    if(!_this.checkPwned())
-                        _this.updateAttributeClass($('li#pwned'), 'class', 'green');
-                    else
+                    var pwned = _this.checkPwned();
+                    pwned.then(function(response) {
+                        if(!response)
+                            _this.updateAttributeClass($('li#pwned'), 'class', 'green');
+                        else
+                            _this.updateAttributeClass($('li#pwned'), 'class', 'red');
+                    }).fail(function(Error) {
+                        console.log('error contacting api');
                         _this.updateAttributeClass($('li#pwned'), 'class', 'red');
+                    });
                 });
                 this.validate();
             }
